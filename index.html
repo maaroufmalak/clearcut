@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f7f5">
+  <meta name="description" content="Remove photo backgrounds for free. Clearcut works privately in your browser, with no signup, credits, or watermarks.">
+  <title>Clearcut — Keep the good part.</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <header class="header wrap">
+    <a class="brand" href="./" aria-label="Clearcut home"><span class="brand-mark"><i data-lucide="scan"></i></span>clearcut<span class="brand-dot">.</span></a>
+    <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="https://github.com/maaroufmalak/clearcut" target="_blank" rel="noopener">Source code <i data-lucide="arrow-up-right"></i></a></nav>
+    <span class="free-badge"><span></span>Free. For everyone.</span>
+  </header>
+  <main class="wrap">
+    <section class="intro"><div><p class="eyebrow">A LITTLE LESS BACKGROUND. A LOT MORE YOU.</p><h1>Keep the <span>good part.</span></h1></div><p>Remove the background. <br>Make room for something new.<br><span>Free, private, and watermark-free.</span></p></section>
+    <section class="workspace" aria-label="Background removal workspace">
+      <div class="stage-panel">
+        <div class="stage-top"><span class="stage-title" id="stage-title"><i data-lucide="image"></i>Your canvas</span><div class="tabs" role="group" aria-label="Preview mode"><button id="original-tab" class="active" aria-pressed="true">Original</button><button id="result-tab" aria-pressed="false" disabled>Result</button></div></div>
+        <div class="stage checker" id="stage"><div class="sample-tag" id="sample-tag">TRY IT WITH OUR SAMPLE</div><img id="preview" src="./sample.png" alt="Sample: a green rubber plant in a terracotta pot"><div class="empty-caption" id="empty-caption">Every photo has a good side.</div><div class="processing-overlay" id="processing-overlay" hidden><div class="scan-line"></div><span>Finding the good part…</span></div></div>
+        <div class="stage-bottom"><span id="image-meta">Your next great cutout starts here.</span><span><i data-lucide="shield-check"></i>On your device</span></div>
+      </div>
+      <aside class="controls">
+        <div class="control-heading"><span class="step-number">01 /</span><h2>A photo. A fresh start.</h2><p>People, products, pets. Keep what matters.</p></div>
+        <div class="drop-zone" id="drop-zone"><i data-lucide="image-up" class="upload-icon"></i><button class="primary" id="choose-button"><i data-lucide="plus"></i>Choose photo</button><p>or drop an image here</p><span>JPG, PNG, WebP · up to 20 MB</span><input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" hidden></div>
+        <button id="sample-button" class="sample-button"><img src="./sample.png" alt=""><span>No photo handy? <strong>Try this one</strong></span><i data-lucide="arrow-up-right"></i></button>
+        <div class="status-area" id="status-area" hidden><p id="status" role="status" aria-live="polite"></p><progress id="progress" max="100" aria-label="Processing progress"></progress><button id="cancel-button" class="text-button">Cancel</button></div>
+        <p id="error" class="error" role="alert" hidden></p>
+        <div class="result-controls" id="result-controls" hidden><div class="divider"></div><div class="option-label"><h3>Make it yours</h3><span>Background</span></div><div class="swatches" role="group" aria-label="Background color"><button class="swatch checker selected" data-color="transparent" aria-label="Transparent background" aria-pressed="true"></button><button class="swatch" style="--swatch:#ffffff" data-color="#ffffff" aria-label="White background" aria-pressed="false"></button><button class="swatch" style="--swatch:#202924" data-color="#202924" aria-label="Dark background" aria-pressed="false"></button><button class="swatch" style="--swatch:#dce7dd" data-color="#dce7dd" aria-label="Sage background" aria-pressed="false"></button><label class="custom-color" title="Choose a custom background color"><i data-lucide="palette"></i><input id="custom-color" type="color" value="#dce7dd" aria-label="Custom background color"></label></div><button class="primary download" id="download-button"><i data-lucide="download"></i>Download PNG</button><p class="download-note" id="download-note">Transparent background · no watermark</p></div>
+        <p class="privacy-note"><i data-lucide="lock-keyhole"></i><span>Your photos stay in your browser.<br>Only you see them.</span></p>
+      </aside>
+    </section>
+    <section class="how" id="how-it-works"><div class="how-title"><h2>Less work.<br>More possibilities.</h2><p>One simple tool. No account needed.</p></div><ol><li><span>01</span><div><h3>Bring your photo</h3><p>Choose a photo, drag it in, or paste it from your clipboard.</p></div></li><li><span>02</span><div><h3>Let the background go</h3><p>AI finds the subject right in your browser. The first run downloads the model.</p></div></li><li><span>03</span><div><h3>Take it anywhere</h3><p>Download a transparent PNG or choose a new background color. No watermarks.</p></div></li></ol></section>
+    <section class="questions"><h2>A few good answers.</h2><div><details><summary>Is it really free?</summary><p>Yes. No subscriptions, credits, or daily photo limits. Clearcut runs on your device and is open source.</p></details><details><summary>Where do my photos go?</summary><p>They stay in your browser. Clearcut does not upload your images or use analytics. Your browser downloads the AI model and site files from GitHub Pages; those requests do not contain your photos.</p></details><details><summary>Why does the first photo take longer?</summary><p>The first run downloads about 56 MB of AI and runtime files, then starts the model. Your browser may cache those files for later visits. Keep this tab open while it processes; speed depends on your device.</p></details><details><summary>Will every cutout be perfect?</summary><p>Fine hair, glass, shadows, and busy backgrounds can be challenging. For best results, choose a sharp photo with a clearly visible subject. Images larger than 4096 pixels on the longest side or 12 megapixels are resized to keep processing manageable. Modern desktop browsers work best; low-memory devices may struggle.</p></details></div></section>
+  </main>
+  <footer class="wrap"><a class="brand" href="./">clearcut<span class="brand-dot">.</span></a><p>A little tool with nothing to hide.</p><div><a href="https://github.com/maaroufmalak/clearcut">Open source <i data-lucide="arrow-up-right"></i></a><a href="./LICENSE.txt">AGPL-3.0 license</a></div><small>© 2026 Clearcut contributors. Free software, provided without warranty. <a href="./THIRD_PARTY_NOTICES.txt">Third-party notices</a></small></footer>
+  <noscript><p class="error">Enable JavaScript to remove backgrounds in your browser.</p></noscript>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

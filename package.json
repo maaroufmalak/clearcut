@@ -1,0 +1,22 @@
+{
+  "name": "clearcut-background-remover",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test tests/*.test.js",
+    "assets": "node scripts/prepare-model.mjs"
+  },
+  "dependencies": {
+    "@imgly/background-removal": "1.7.0",
+    "lucide": "0.468.0",
+    "onnxruntime-web": "1.21.0"
+  },
+  "devDependencies": {
+    "vite": "6.4.5"
+  }
+}

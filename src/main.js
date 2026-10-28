@@ -3,7 +3,7 @@ import { createIcons, Scan, ArrowUpRight, Image, ImageUp, Plus, ShieldCheck, Loc
 import { validateFile, fitDimensions, outputName } from './image-utils';
 createIcons({ icons: { Scan, ArrowUpRight, Image, ImageUp, Plus, ShieldCheck, LockKeyhole, Palette, Download } });
 const $ = id => document.getElementById(id);
-const state = { worker: null, busy: false, original: null, result: null, fileName: 'photo', color: 'transparent', mode: 'result', urls: [], timer: null, job: 0 };
+const state = { worker: null, busy: false, original: null, result: null, fileName: 'photo', color: 'transparent', mode: 'original', urls: [], timer: null, job: 0 };
 function url(blob) { const value = URL.createObjectURL(blob); state.urls.push(value); return value; }
 function showError(message) { $('error').textContent = message; $('error').hidden = false; }
 function setBusy(busy) {
@@ -88,7 +88,7 @@ async function processFile(file) {
     };
     state.worker.postMessage({ file: prepared.blob, publicPath: new URL('./model/', document.baseURI).href });
     state.timer = setTimeout(() => { if (state.busy) { terminate(); setBusy(false); showError('This is taking too long on your device. Try a smaller photo or a desktop browser, then choose your photo again.'); } }, 300_000);
-  } catch (error) { if (job === state.job) { setBusy(false); showError(error.message || 'Could not open this image. Try another photo.'); } }
+  } catch (error) { if (job === state.job) { setBusy(false); $('result-controls').hidden = !state.result; showError(error.message || 'Could not open this image. Try another photo.'); } }
 }
 $('choose-button').onclick = () => $('file-input').click();
 $('file-input').onchange = e => { const file = e.target.files[0]; e.target.value = ''; if (file) processFile(file); };

@@ -1,13 +1,17 @@
 import './style.css';
 import { createIcons, Scan, ArrowUpRight, Image, ImageUp, Plus, ShieldCheck, LockKeyhole, Palette, Download } from 'lucide';
 import { validateFile, fitDimensions, outputName } from './image-utils';
+import { createBrushEditor } from './brush-editor';
 createIcons({ icons: { Scan, ArrowUpRight, Image, ImageUp, Plus, ShieldCheck, LockKeyhole, Palette, Download } });
 const $ = id => document.getElementById(id);
 const state = { worker: null, busy: false, original: null, result: null, fileName: 'photo', color: 'transparent', mode: 'original', urls: [], timer: null, job: 0 };
+const editor = createBrushEditor({ stage: $('stage'), canvas: $('edit-canvas'), toolbar: $('brush-toolbar'), toggle: $('brush-toggle'), options: $('brush-options'), size: $('brush-size'), sizeLabel: $('brush-size-label'), undo: $('brush-undo'), reset: $('brush-reset'), cursor: $('brush-cursor'), notice: $('brush-notice'), onActivate: () => { state.mode = 'result'; render(); } });
 function url(blob) { const value = URL.createObjectURL(blob); state.urls.push(value); return value; }
 function showError(message) { $('error').textContent = message; $('error').hidden = false; }
 function setBusy(busy) {
   state.busy = busy;
+  if (busy) editor.finish();
+  $('brush-toolbar').hidden = busy || !state.result;
   $('choose-button').disabled = busy;
   $('sample-button').disabled = busy;
   $('file-input').disabled = busy;
@@ -20,7 +24,10 @@ function terminate() { state.worker?.terminate(); state.worker = null; clearTime
 function render() {
   $('result-tab').disabled = !state.result;
   const resultVisible = state.mode === 'result' && state.result;
+  $('preview').hidden = !!resultVisible;
+  editor.show(!!resultVisible);
   if (state.original) $('preview').src = resultVisible ? state.result : state.original;
+  if (state.original) $('preview').alt = 'Your original photo';
   $('stage').style.backgroundColor = resultVisible && state.color !== 'transparent' ? state.color : '';
   $('stage').classList.toggle('checker', !resultVisible || state.color === 'transparent');
   $('original-tab').setAttribute('aria-pressed', String(state.mode === 'original'));
@@ -55,6 +62,7 @@ async function processFile(file) {
   try {
     const prepared = await prepare(file);
     if (job !== state.job) return;
+    editor.clear();
     state.urls.forEach(URL.revokeObjectURL); state.urls = [];
     state.original = url(prepared.blob); state.result = null; state.fileName = file.name || 'photo'; state.mode = 'original';
     $('preview').alt = 'Your selected photo';
@@ -70,7 +78,7 @@ async function processFile(file) {
       showError('Processing could not finish. Check your connection, try a smaller photo, or use an up-to-date desktop browser. Choose the photo again to retry.');
     };
     state.worker.onerror = fail;
-    state.worker.onmessage = ({ data }) => {
+    state.worker.onmessage = async ({ data }) => {
       if (job !== state.job) return;
       if (data.type === 'progress') {
         if (data.key.startsWith('fetch:')) {
@@ -79,6 +87,8 @@ async function processFile(file) {
           if (data.total && percent < 100) $('progress').value = percent; else $('progress').removeAttribute('value');
         } else { $('status').textContent = 'Removing the background on your device…'; $('progress').removeAttribute('value'); }
       } else if (data.type === 'done') {
+        try { if (!await editor.load(data.blob) || job !== state.job) return; }
+        catch { fail(); return; }
         state.result = url(data.blob); state.mode = 'result';
         $('preview').alt = 'Your photo with the background removed';
         $('result-controls').hidden = false; setBusy(false); render();
@@ -104,7 +114,7 @@ for (const event of ['dragleave', 'drop']) $('drop-zone').addEventListener(event
 document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); });
 document.addEventListener('paste', e => { const file = [...(e.clipboardData?.files || [])].find(f => f.type.startsWith('image/')); if (file) { e.preventDefault(); processFile(file); } });
-$('cancel-button').onclick = () => { ++state.job; terminate(); setBusy(false); $('result-controls').hidden = !state.result; $('error').hidden = true; };
+$('cancel-button').onclick = () => { ++state.job; terminate(); if (!state.result) editor.clear(); setBusy(false); $('result-controls').hidden = !state.result; $('error').hidden = true; };
 $('original-tab').onclick = () => { state.mode = 'original'; render(); };
 $('result-tab').onclick = () => { state.mode = 'result'; render(); };
 function setColor(color) {
@@ -119,18 +129,17 @@ $('download-button').onclick = async () => {
   if (!state.result) return;
   $('download-button').disabled = true;
   try {
-    let downloadUrl = state.result;
-    if (state.color !== 'transparent') {
-      const bitmap = await createImageBitmap(await (await fetch(state.result)).blob());
-      const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
-      const ctx = canvas.getContext('2d'); ctx.fillStyle = state.color; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(bitmap, 0, 0); bitmap.close();
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      canvas.width = canvas.height = 1;
-      if (!blob) throw new Error('Could not create your download. Try the transparent option.');
-      downloadUrl = URL.createObjectURL(blob);
-    }
+    editor.finish();
+    const canvas = document.createElement('canvas'); canvas.width = editor.canvas.width; canvas.height = editor.canvas.height;
+    const ctx = canvas.getContext('2d');
+    if (state.color !== 'transparent') { ctx.fillStyle = state.color; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+    ctx.drawImage(editor.canvas, 0, 0);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    canvas.width = canvas.height = 1;
+    if (!blob) throw new Error('Could not create your download. Please try again.');
+    const downloadUrl = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = downloadUrl; a.download = outputName(state.fileName); document.body.append(a); a.click(); a.remove();
-    if (downloadUrl !== state.result) setTimeout(() => URL.revokeObjectURL(downloadUrl), 60_000);
+    setTimeout(() => URL.revokeObjectURL(downloadUrl), 60_000);
   } catch (error) { showError(error.message || 'The download failed. Please try again.'); }
   finally { $('download-button').disabled = false; }
 };
